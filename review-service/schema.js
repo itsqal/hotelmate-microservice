@@ -8,17 +8,25 @@ export const typeDefs = `#graphql
         content: String
         reviewDate: String!
         lastUpdated: String
+        aspects: [ReviewAspect]
     }
     type Aspect {
         aspectId: ID!
         name: String!
+        reviews: [ReviewAspect]
     }
-    type ReviewAspectRating {
-        aspect: Aspect! # The aspect that was rated (e.g., "Cleanliness")
-        rating: Int!    # The rating given (e.g., 4)
+    type ReviewAspect {
+        reviewId: ID!
+        aspectId: ID!
+        rating: Int!
+        comment: String
+        review: Review!
+        aspect: Aspect!
     }
     type Query {
         reviews: [Review]
+        review(id: ID!): Review
         aspects: [Aspect]
+        aspect(id: ID!): Aspect
     }
 `
