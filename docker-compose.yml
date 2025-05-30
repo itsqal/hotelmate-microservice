@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  loyalty-service:
+    build: ./loyalty-service
+    ports:
+      - "4001:4001"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=loyalty_db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - GUEST_SERVICE_URL=http://guest_service:8000/graphql
+      - RESERVATION_SERVICE_URL=http://reservation_service:8000/graphql
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotelease_network
+      - hotelmate_network
+
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=loyalty_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./loyalty-service/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - hotelmate_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  hotelease_network:
+    external: true
+  hotelmate_network:
+    driver: bridge
+
+volumes:
+  postgres_data: 
