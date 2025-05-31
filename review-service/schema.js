@@ -34,15 +34,30 @@ export const typeDefs = `#graphql
         message: String
     }
     type Mutation {
-        addAspect(input: addAspectInput!): Aspect
+        addAspect(input: AddAspectInput!): Aspect
+        updateAspect(input: UpdateAspectInput!): Aspect
         deleteAspect(id: ID!): MutationResponse
-        updateAspect(input: updateAspectInput!): Aspect
+        addReview(input: AddReviewInput!): Review
+        updateReview(input: UpdateReviewInput!): Review
+        deleteReview(id: ID!): MutationResponse
     }
-    input addAspectInput {
+    input AddAspectInput {
         name: String!
     }
-    input updateAspectInput {
+    input UpdateAspectInput {
         aspectId: ID!
         name: String!
+    }
+    input AddReviewInput {
+        guestId: Int!
+        hotelId: Int!
+        stayId: Int!
+        overallRating: Int!
+        content: String
+    }
+    input UpdateReviewInput {
+        reviewId: ID!,
+        overallRating: Int
+        content: String
     }
 `
