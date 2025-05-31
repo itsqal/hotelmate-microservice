@@ -29,4 +29,20 @@ export const typeDefs = `#graphql
         aspects: [Aspect]
         aspect(id: ID!): Aspect
     }
+    type MutationResponse {
+        success: Boolean!
+        message: String
+    }
+    type Mutation {
+        addAspect(input: addAspectInput!): Aspect
+        deleteAspect(id: ID!): MutationResponse
+        updateAspect(input: updateAspectInput!): Aspect
+    }
+    input addAspectInput {
+        name: String!
+    }
+    input updateAspectInput {
+        aspectId: ID!
+        name: String!
+    }
 `

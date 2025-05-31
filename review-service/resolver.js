@@ -1,5 +1,5 @@
 import { getReviews, getReviewById } from "./queries/review-query.js";
-import { getAspects, getAspectById } from "./queries/aspect-query.js";
+import { getAspects, getAspectById, addAspect, updateAspect, deleteAspect } from "./queries/aspect-query.js";
 import pool from './connection.js';
 
 export const resolvers = {
@@ -79,5 +79,16 @@ export const resolvers = {
                 }
             }));
         }
+    },
+    Mutation: {
+        addAspect: async (_, { input }) => {
+            return await addAspect(input.name);
+        },
+        updateAspect: async (_, { input }) => {
+            return await updateAspect(input.aspectId, input.name);
+        },
+        deleteAspect: async (_, { id }) => {
+            return await deleteAspect(id);
+        }
     }
-}
+};
