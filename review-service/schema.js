@@ -2,7 +2,6 @@ export const typeDefs = `#graphql
     type Review {
         reviewId: ID!
         guestId: Int!
-        hotelId: Int!
         stayId: Int!
         overallRating: Int!
         content: String
@@ -23,11 +22,25 @@ export const typeDefs = `#graphql
         review: Review!
         aspect: Aspect!
     }
+    type Reservation {
+        id: ID!
+        checkInDate: String!
+        checkOutDate: String!
+    }
+    type Guest {
+        id: ID!
+        fullName: String
+        email: String
+        phone: String
+        address: String
+    }
     type Query {
         reviews: [Review]
         review(id: ID!): Review
         aspects: [Aspect]
         aspect(id: ID!): Aspect
+        guests: [Guest]
+        reservations: [Reservation]
     }
     type MutationResponse {
         success: Boolean!
@@ -40,6 +53,14 @@ export const typeDefs = `#graphql
         addReview(input: AddReviewInput!): Review
         updateReview(input: UpdateReviewInput!): Review
         deleteReview(id: ID!): MutationResponse
+
+        addReviewAspect(input: AddReviewAspectInput!): ReviewAspect
+    }
+    input AddReviewAspectInput {
+        reviewId: Int!
+        aspectId: Int!,
+        rating: Int!,
+        comment: String
     }
     input AddAspectInput {
         name: String!
@@ -50,7 +71,6 @@ export const typeDefs = `#graphql
     }
     input AddReviewInput {
         guestId: Int!
-        hotelId: Int!
         stayId: Int!
         overallRating: Int!
         content: String

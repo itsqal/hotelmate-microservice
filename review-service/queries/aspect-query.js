@@ -8,7 +8,7 @@ export const getAspects = async () => {
     try {
         const result = await pool.query(query);
         return result.rows.map(aspect => ({
-            aspectId: aspect.aspect_id,
+            aspectId: aspect.id,
             name: aspect.name
         }));
     } catch (error) {
@@ -20,14 +20,14 @@ export const getAspects = async () => {
 export const getAspectById = async (id) => {
     const query = `
         SELECT * FROM aspects
-        WHERE aspect_id = $1
+        WHERE id = $1
     `;
 
     try {
         const result = await pool.query(query, [id]);
         const aspect = result.rows[0];
         return {
-            aspectId: aspect.aspect_id,
+            aspectId: aspect.id,
             name: aspect.name
         };
     } catch (error) {
@@ -40,13 +40,13 @@ export const addAspect = async (name) => {
     const query = `
         INSERT INTO aspects (name)
         VALUES ($1)
-        returning aspect_id, name
+        returning id, name
     `;
 
     try {
         const result = await pool.query(query, [name]);
         return {
-            aspectId: result.rows[0].aspect_id,
+            aspectId: result.rows[0].id,
             name: result.rows[0].name,
         };
     } catch (error) {
@@ -59,8 +59,8 @@ export const updateAspect = async (aspectId, name) => {
     const query = `
         UPDATE aspects
         SET name = $1
-        WHERE aspect_id = $2
-        RETURNING aspect_id, name
+        WHERE id = $2
+        RETURNING id, name
     `;
 
     try {
@@ -69,7 +69,7 @@ export const updateAspect = async (aspectId, name) => {
             throw new Error('Aspect not found');
         }
         return {
-            aspectId: result.rows[0].aspect_id,
+            aspectId: result.rows[0].id,
             name: result.rows[0].name,
         };
     } catch (error) {
@@ -81,8 +81,8 @@ export const updateAspect = async (aspectId, name) => {
 export const deleteAspect = async (id) => {
     const query = `
         DELETE FROM aspects
-        WHERE aspect_id = $1
-        RETURNING aspect_id
+        WHERE id = $1
+        RETURNING id
     `;
 
     try {
