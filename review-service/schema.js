@@ -22,10 +22,19 @@ export const typeDefs = `#graphql
         review: Review!
         aspect: Aspect!
     }
+    type Room {
+        id: ID!
+        roomNumber: Int!
+        roomType: String!
+        pricePerNight: Float!
+        status: String!
+    }
     type Reservation {
         id: ID!
+        roomId: Int!
         checkInDate: String!
         checkOutDate: String!
+        room: Room!
     }
     type Guest {
         id: ID!

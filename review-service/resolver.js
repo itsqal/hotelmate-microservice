@@ -1,6 +1,6 @@
 import { getReviews, getReviewById, addReview, updateReview, deleteReview } from "./queries/review-query.js";
 import { getAspects, getAspectById, addAspect, updateAspect, deleteAspect } from "./queries/aspect-query.js";
-import { fetchGuestData, fetchReservationData, fetchGuestById } from "./remoteGraphQLClient.js";
+import { fetchGuestData, fetchReservationData, fetchGuestById, fetchRoomDataById } from "./remoteGraphQLClient.js";
 import { addReviewAspect } from "./queries/review-aspect-query.js";
 import pool from './connection.js';
 
@@ -99,6 +99,13 @@ export const resolvers = {
                     lastUpdated: row.last_updated
                 }
             }));
+        }
+    },
+    Reservation: {
+        room: async (parent) => {
+            const result = await fetchRoomDataById(parent.roomId);
+
+            return result;
         }
     },
     Mutation: {

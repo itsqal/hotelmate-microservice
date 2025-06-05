@@ -5,9 +5,11 @@ dotenv.config();
 
 const guest_service_url = process.env.GUEST_SERVICE_URL;
 const reservation_service_url = process.env.RESERVATION_SERVICE_URL;
+const room_service_url = process.env.ROOM_SERVICE_URL;
 
 const guestClient = new GraphQLClient(guest_service_url);
 const reservationClient = new GraphQLClient(reservation_service_url);
+const roomClient = new GraphQLClient(room_service_url);
 
 export async function fetchGuestData() {
     const query = gql`
@@ -44,11 +46,30 @@ export async function fetchGuestById(guest_id) {
     return data.guest;
 }
 
+export async function fetchRoomDataById(room_id) {
+    const query = gql`
+        query ($id: Int!) {
+            room(id: $id) {
+                id
+                roomNumber
+                roomType
+                pricePerNight
+                status
+            }
+        }
+    `;
+
+    const variables = { id: room_id };
+    const data = await roomClient.request(query, variables);
+    return data.room
+}
+
 export async function fetchReservationData() {
     const query = gql`
         query {
             reservations {
                 id
+                roomId
                 checkInDate
                 checkOutDate
             }
