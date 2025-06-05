@@ -26,6 +26,24 @@ export async function fetchGuestData() {
     return guestClient.request(query);
 }
 
+export async function fetchGuestById(guest_id) {
+    const query = gql`
+        query ($id: Int!) {
+            guest(id: $id) {
+                id
+                fullName
+                email
+                phone
+                address
+            }
+        }
+    `;
+
+    const variables = { id: guest_id };
+    const data = await guestClient.request(query, variables);
+    return data.guest;
+}
+
 export async function fetchReservationData() {
     const query = gql`
         query {

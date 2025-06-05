@@ -1,6 +1,6 @@
 import { getReviews, getReviewById, addReview, updateReview, deleteReview } from "./queries/review-query.js";
 import { getAspects, getAspectById, addAspect, updateAspect, deleteAspect } from "./queries/aspect-query.js";
-import { fetchGuestData, fetchReservationData } from "./remoteGraphQLClient.js";
+import { fetchGuestData, fetchReservationData, fetchGuestById } from "./remoteGraphQLClient.js";
 import { addReviewAspect } from "./queries/review-aspect-query.js";
 import pool from './connection.js';
 
@@ -52,6 +52,19 @@ export const resolvers = {
                     name: row.name
                 }
             }));
+        },
+        guest: async (parent) => {
+            const query = `
+                SELECT guest_id FROM reviews
+                WHERE id = $1;
+            `;
+
+            const review = await pool.query(query, [parent.reviewId]);
+
+            const guest_id = review.rows[0].guest_id;
+            
+            const result = await fetchGuestById(guest_id);
+            return result;
         }
     },
     Aspect: {

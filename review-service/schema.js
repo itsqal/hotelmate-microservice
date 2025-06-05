@@ -1,13 +1,13 @@
 export const typeDefs = `#graphql
     type Review {
         reviewId: ID!
-        guestId: Int!
         stayId: Int!
         overallRating: Int!
         content: String
         reviewDate: String!
         lastUpdated: String
         aspects: [ReviewAspect]
+        guest: Guest
     }
     type Aspect {
         aspectId: ID!
