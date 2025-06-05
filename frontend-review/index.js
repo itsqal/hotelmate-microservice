@@ -20,7 +20,14 @@ app.use(express.static(path.join(__dirname, "public")));
 const GRAPHQL_ENDPOINT = process.env.GRAPHQL_ENDPOINT;
 
 app.get("/", async (req, res) => {
-  // GraphQL query to fetch all reviews with nested guest data
+  try {
+      res.render("home");
+  } catch (error) {
+      res.status(500).send("Error rendering landing page");
+  }
+});
+
+app.get("/reviews", async (req, res) => {
   const query = `
     query {
       reviews {
@@ -50,7 +57,7 @@ app.get("/", async (req, res) => {
       body: JSON.stringify({ query }),
     });
     const { data } = await response.json();
-    res.render("index", { reviews: data.reviews });
+    res.render("reviews", { reviews: data.reviews });
   } catch (error) {
     res.status(500).send("Error fetching reviews");
   }
