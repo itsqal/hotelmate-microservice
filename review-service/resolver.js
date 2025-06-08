@@ -1,5 +1,7 @@
-import { getReviews, getReviewById } from "./queries/review-query.js";
-import { getAspects, getAspectById } from "./queries/aspect-query.js";
+import { getReviews, getReviewById, addReview, updateReview, deleteReview } from "./queries/review-query.js";
+import { getAspects, getAspectById, addAspect, updateAspect, deleteAspect } from "./queries/aspect-query.js";
+import { fetchGuestData, fetchReservationData, fetchGuestById, fetchRoomDataById } from "./remoteGraphQLClient.js";
+import { addReviewAspect } from "./queries/review-aspect-query.js";
 import pool from './connection.js';
 
 export const resolvers = {
@@ -15,6 +17,14 @@ export const resolvers = {
         },
         aspect: async (_, { id }) => {
             return await getAspectById(id);
+        },
+        guests: async () => {
+            const data = await fetchGuestData();
+            return data.guests;
+        },
+        reservations: async() => {
+            const data = await fetchReservationData();
+            return data.reservations;
         }
     },
     Review: {
@@ -26,9 +36,9 @@ export const resolvers = {
                     ra.rating,
                     ra.comment,
                     a.name,
-                    a.aspect_id
-                FROM review_aspect ra
-                JOIN aspects a ON ra.aspect_id = a.aspect_id
+                    a.id
+                FROM review_aspects ra
+                JOIN aspects a ON ra.aspect_id = a.id
                 WHERE ra.review_id = $1
             `;
             const result = await pool.query(query, [parent.reviewId]);
@@ -38,10 +48,23 @@ export const resolvers = {
                 rating: row.rating,
                 comment: row.comment,
                 aspect: {
-                    aspectId: row.aspect_id,
+                    aspectId: row.id,
                     name: row.name
                 }
             }));
+        },
+        guest: async (parent) => {
+            const query = `
+                SELECT guest_id FROM reviews
+                WHERE id = $1;
+            `;
+
+            const review = await pool.query(query, [parent.reviewId]);
+
+            const guest_id = review.rows[0].guest_id;
+            
+            const result = await fetchGuestById(guest_id);
+            return result;
         }
     },
     Aspect: {
@@ -49,16 +72,15 @@ export const resolvers = {
             const query = `
                 SELECT 
                     ra.*,
-                    r.review_id,
+                    r.id,
                     r.guest_id,
-                    r.hotel_id,
                     r.stay_id,
                     r.overall_rating,
                     r.content,
                     r.review_date,
                     r.last_updated
-                FROM review_aspect ra
-                JOIN reviews r ON ra.review_id = r.review_id
+                FROM review_aspects ra
+                JOIN reviews r ON ra.review_id = r.id
                 WHERE ra.aspect_id = $1
             `;
             const result = await pool.query(query, [parent.aspectId]);
@@ -68,9 +90,8 @@ export const resolvers = {
                 rating: row.rating,
                 comment: row.comment,
                 review: {
-                    reviewId: row.review_id,
+                    reviewId: row.id,
                     guestId: row.guest_id,
-                    hotelId: row.hotel_id,
                     stayId: row.stay_id,
                     overallRating: row.overall_rating,
                     content: row.content,
@@ -79,5 +100,35 @@ export const resolvers = {
                 }
             }));
         }
+    },
+    Reservation: {
+        room: async (parent) => {
+            const result = await fetchRoomDataById(parent.roomId);
+
+            return result;
+        }
+    },
+    Mutation: {
+        addAspect: async (_, { input }) => {
+            return await addAspect(input.name);
+        },
+        updateAspect: async (_, { input }) => {
+            return await updateAspect(input.aspectId, input.name);
+        },
+        deleteAspect: async (_, { id }) => {
+            return await deleteAspect(id);
+        },
+        addReview: async (_, { input }) => {
+            return await addReview(input);
+        },
+        updateReview: async (_, { input }) => {
+            return await updateReview(input);
+        },
+        deleteReview: async (_, { id }) => {
+            return await deleteReview(id);
+        },
+        addReviewAspect: async (_, { input }) => {
+            return await addReviewAspect(input);
+        }
     }
-}
+};
