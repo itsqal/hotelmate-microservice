@@ -49,14 +49,34 @@ export const resolvers = {
             }
         },
 
-        rewards: async (_, { available }) => {
+        rewards: async (_, { available, tier }) => {
             try {
-                const query = available !== undefined
-                    ? 'SELECT * FROM rewards WHERE available = $1'
-                    : 'SELECT * FROM rewards';
-                const params = available !== undefined ? [available] : [];
+                let query = 'SELECT * FROM rewards';
+                const params = [];
+                const conditions = [];
+                if (available !== undefined) {
+                    conditions.push('available = $' + (params.length + 1));
+                    params.push(available);
+                }
+                if (tier) {
+                    conditions.push('tier_restriction = $' + (params.length + 1));
+                    params.push(tier);
+                }
+                if (conditions.length > 0) {
+                    query += ' WHERE ' + conditions.join(' AND ');
+                }
                 const result = await pool.query(query, params);
-                return result.rows;
+                // Map snake_case to camelCase
+                return result.rows.map(row => ({
+                    rewardId: row.reward_id,
+                    name: row.name,
+                    pointsRequired: row.points_required,
+                    description: row.description,
+                    available: row.available,
+                    tierRestriction: row.tier_restriction,
+                    createdAt: row.created_at,
+                    updatedAt: row.updated_at
+                }));
             } catch (error) {
                 throw new LoyaltyServiceError(
                     error.message || 'Error fetching rewards',
@@ -74,7 +94,17 @@ export const resolvers = {
                 if (!result.rows[0]) {
                     throw new LoyaltyServiceError('Reward not found', 'NOT_FOUND');
                 }
-                return result.rows[0];
+                const row = result.rows[0];
+                return {
+                    rewardId: row.reward_id,
+                    name: row.name,
+                    pointsRequired: row.points_required,
+                    description: row.description,
+                    available: row.available,
+                    tierRestriction: row.tier_restriction,
+                    createdAt: row.created_at,
+                    updatedAt: row.updated_at
+                };
             } catch (error) {
                 throw new LoyaltyServiceError(
                     error.message || 'Error fetching reward',
@@ -366,6 +396,24 @@ export const resolvers = {
             } catch (error) {
                 throw new LoyaltyServiceError(
                     error.message || 'Error updating redemption status',
+                    error.code || 'INTERNAL_ERROR'
+                );
+            }
+        },
+
+        addReward: async (_, { name, pointsRequired, description, available = true, tierRestriction }) => {
+            if (pointsRequired <= 0) {
+                throw new LoyaltyServiceError('Points required must be greater than 0', 'INVALID_INPUT');
+            }
+            try {
+                const result = await pool.query(
+                    'INSERT INTO rewards (name, points_required, description, available, tier_restriction) VALUES ($1, $2, $3, $4, $5) RETURNING reward_id AS "rewardId", name, points_required AS "pointsRequired", description, available, tier_restriction AS "tierRestriction", created_at AS "createdAt", updated_at AS "updatedAt"',
+                    [name, pointsRequired, description, available, tierRestriction]
+                );
+                return result.rows[0];
+            } catch (error) {
+                throw new LoyaltyServiceError(
+                    error.message || 'Error adding reward',
                     error.code || 'INTERNAL_ERROR'
                 );
             }
