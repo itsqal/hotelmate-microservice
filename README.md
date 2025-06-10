@@ -64,27 +64,103 @@ Below are example queries and mutations for each service.
 
 ---
 
-### 📘 Review Service Examples
+### 📘 Review Service Mutation
 
 #### ✅ Create a Review
 ```graphql
-mutation {
-  createReview(input: {
-    guestId: "12345",
-    reservationId: "abcde",
-    roomId: "room-101",
-    comments: "Great stay!",
-    aspects: [
-      { name: "Cleanliness", score: 5 },
-      { name: "Hospitality", score: 4 }
-    ]
-  }) {
-    id
-    comments
-    aspects {
-      name
-      score
+mutation createReview {
+    addReview(input: {
+        guestId: 1,
+        stayId: 1,
+        overallRating: 3,
+        content: "Not so bad. I recommend giving this hotel a try!"
+    }) {
+        reviewId,
+        guestId,
+        stayId,
+        overallRating,
+        content
     }
-  }
 }
 ```
+
+### ✅ Update a Review
+```graphql
+mutation updateReview {
+    updateReview (input: {
+        reviewId: 1,
+        overallRating: 4,
+        content: "I really enjoyed staying at this hotel!"
+    }) {
+        reviewId,
+        overallRating,
+        content
+    }
+}
+```
+
+### ✅ Delete A Review
+```graphql
+mutation deleteReview {
+    deleteReview (id: 1) {
+        success,
+        message
+    }
+}
+```
+### 📘 Review Service Query
+
+### ✅ Get All Review
+```graphql
+query getReviews {
+    reviews {
+        reviewId,
+        overallRating,
+        content,
+        aspects {
+            rating,
+            comment,
+            aspect {
+                aspectId,
+                name
+            }
+        }
+        guest {
+          id
+          fullName
+          email
+          phone
+          address
+        }
+    }
+}
+```
+
+### ✅ Update a Single Review
+```graphql
+query getReviewById {
+    review(id: 1) {
+        reviewId,
+        overallRating,
+        content,
+        aspects {
+            rating,
+            comment,
+            aspect {
+                aspectId,
+                name
+            }
+        }
+        guest {
+          id
+          fullName
+          email
+          phone
+          address
+        }
+    }
+}
+```
+
+### 📘 Loyalty Service Mutation
+### 📘 Loyalty Service Query
