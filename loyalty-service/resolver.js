@@ -1,4 +1,9 @@
 import pool from './connection.js';
+import { 
+  getGuestByEmail, 
+  getReservationsByGuest, 
+  getBillsByReservation 
+} from './clients/hotelease.js';
 
 // Custom error class for loyalty service
 class LoyaltyServiceError extends Error {
@@ -211,6 +216,42 @@ export const resolvers = {
                     error.code || 'INTERNAL_ERROR'
                 );
             }
+        },
+
+        hotelEaseGuest: async (_, { email }) => {
+            try {
+                const result = await getGuestByEmail(email);
+                return result.guestByEmail;
+            } catch (error) {
+                throw new LoyaltyServiceError(
+                    error.message || 'Error fetching HotelEase guest',
+                    error.code || 'INTERNAL_ERROR'
+                );
+            }
+        },
+
+        hotelEaseReservations: async (_, { guestId }) => {
+            try {
+                const result = await getReservationsByGuest(guestId);
+                return result.reservationsByGuest;
+            } catch (error) {
+                throw new LoyaltyServiceError(
+                    error.message || 'Error fetching HotelEase reservations',
+                    error.code || 'INTERNAL_ERROR'
+                );
+            }
+        },
+
+        hotelEaseBills: async (_, { reservationId }) => {
+            try {
+                const result = await getBillsByReservation(reservationId);
+                return result.billsByReservation;
+            } catch (error) {
+                throw new LoyaltyServiceError(
+                    error.message || 'Error fetching HotelEase bills',
+                    error.code || 'INTERNAL_ERROR'
+                );
+            }
         }
     },
 
@@ -257,46 +298,58 @@ export const resolvers = {
             }
         },
 
-        earnPoints: async (_, { accountId, points, description }) => {
-            if (points <= 0) {
-                throw new LoyaltyServiceError('Points must be greater than 0', 'INVALID_INPUT');
-            }
-
-            const client = await pool.connect();
+        earnPoints: async (_, { guestId, points, reason }) => {
             try {
-                await client.query('BEGIN');
-                
-                // Check if account exists
-                const accountResult = await client.query(
-                    'SELECT * FROM loyalty_accounts WHERE account_id = $1',
-                    [accountId]
-                );
-                if (!accountResult.rows[0]) {
-                    throw new LoyaltyServiceError('Account not found', 'NOT_FOUND');
+                // Start transaction
+                const client = await pool.connect();
+                try {
+                    await client.query('BEGIN');
+
+                    // Get current points
+                    const currentPointsResult = await client.query(
+                        'SELECT loyalty_points FROM guests WHERE id = $1',
+                        [guestId]
+                    );
+
+                    if (!currentPointsResult.rows[0]) {
+                        throw new LoyaltyServiceError('Guest not found', 'NOT_FOUND');
+                    }
+
+                    const currentPoints = currentPointsResult.rows[0].loyalty_points;
+                    const newPoints = currentPoints + points;
+
+                    // Update points
+                    await client.query(
+                        'UPDATE guests SET loyalty_points = $1, updated_at = NOW() WHERE id = $2',
+                        [newPoints, guestId]
+                    );
+
+                    // Log transaction
+                    await client.query(
+                        'INSERT INTO point_transactions (guest_id, points, reason, transaction_date) VALUES ($1, $2, $3, NOW())',
+                        [guestId, points, reason]
+                    );
+
+                    await client.query('COMMIT');
+
+                    // Return updated guest
+                    const updatedGuest = await client.query(
+                        'SELECT * FROM guests WHERE id = $1',
+                        [guestId]
+                    );
+
+                    return updatedGuest.rows[0];
+                } catch (error) {
+                    await client.query('ROLLBACK');
+                    throw error;
+                } finally {
+                    client.release();
                 }
-
-                // Create transaction
-                const transactionResult = await client.query(
-                    'INSERT INTO transactions (account_id, points, transaction_type, description, transaction_date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
-                    [accountId, points, 'earn', description]
-                );
-
-                // Update account points
-                await client.query(
-                    'UPDATE loyalty_accounts SET total_points = total_points + $1, last_updated = NOW() WHERE account_id = $2',
-                    [points, accountId]
-                );
-
-                await client.query('COMMIT');
-                return transactionResult.rows[0];
             } catch (error) {
-                await client.query('ROLLBACK');
                 throw new LoyaltyServiceError(
                     error.message || 'Error earning points',
                     error.code || 'INTERNAL_ERROR'
                 );
-            } finally {
-                client.release();
             }
         },
 

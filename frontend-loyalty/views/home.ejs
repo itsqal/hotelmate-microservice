@@ -5,22 +5,258 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotelmate Loyalty Program</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white !important;
+        }
+
+        /* Main Content */
+        .container {
+            padding-top: 2rem;
+        }
+
+        h1 {
+            color: white;
+            font-size: 3rem;
+            font-weight: 800;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+        }
+
+        .lead {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+        }
+
+        /* How It Works Icons */
+        .text-center i {
+            color: #667eea;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+        }
+
+        .text-center:hover i {
+            transform: scale(1.1);
+            color: #764ba2;
+        }
+
+        .text-center h6 {
+            font-weight: 600;
+            color: #2d3748;
+            margin-top: 1rem;
+        }
+
+        /* List Group Styling */
+        .list-group-item {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 15px !important;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            color: #2d3748;
+        }
+
+        .list-group-item:hover {
+            background: rgba(103, 126, 234, 0.1) !important;
+            transform: translateX(10px);
+        }
+
+        .list-group-item h6 {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .list-group-item .text-muted {
+            color: #667eea !important;
+            font-weight: 500;
+        }
+
+        /* Tier Cards */
+        .tier-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            height: 100%;
+        }
+
+        .tier-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--tier-color);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .bronze { --tier-color: linear-gradient(45deg, #cd7f32, #e6a85c); }
+        .silver { --tier-color: linear-gradient(45deg, #c0c0c0, #e8e8e8); }
+        .gold { --tier-color: linear-gradient(45deg, #ffd700, #ffed4a); }
+        .platinum { --tier-color: linear-gradient(45deg, #2d3748, #4a5568); }
+
+        .tier-card h6 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .tier-card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .tier-card ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .tier-card li {
+            padding: 0.3rem 0;
+            display: flex;
+            align-items: center;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .tier-card li::before {
+            content: '✓';
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .card-body { padding: 1.5rem; }
+            .tier-card { margin-bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">Hotelmate Loyalty</a>
+            <a class="navbar-brand" href="/"><i class="fas fa-crown me-2"></i>Hotelmate Loyalty</a>
         </div>
     </nav>
 
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-8">
-                <h1>Welcome to Hotelmate Loyalty Program</h1>
-                <p class="lead">Earn points, enjoy exclusive benefits, and make your stay more rewarding.</p>
+                <h1 class="fade-in">Welcome to Hotelmate Loyalty Program</h1>
+                <p class="lead fade-in">Earn points, enjoy exclusive benefits, and make your stay more rewarding.</p>
                 
-                <div class="card mb-4">
+                <div class="card mb-4 fade-in">
                     <div class="card-body">
                         <h5 class="card-title">How It Works</h5>
                         <div class="row">
@@ -51,7 +287,7 @@
             </div>
             
             <div class="col-md-4">
-                <div class="card">
+                <div class="card fade-in">
                     <div class="card-body">
                         <h5 class="card-title">Available Rewards</h5>
                         <% if (rewards && rewards.length > 0) { %>
@@ -79,7 +315,7 @@
 
         <div class="row mt-4">
             <div class="col-12">
-                <div class="card">
+                <div class="card fade-in">
                     <div class="card-body">
                         <h5 class="card-title">Loyalty Tiers</h5>
                         <div class="row">
@@ -134,5 +370,99 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script>
+        // Add smooth hover effects
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Add stagger animation to fade-in elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.2}s`;
+            });
+        });
+    </script>
 </body>
-</html> 
+</html>>
+                                <li>Late checkout (2pm)</li>
+                            </ul>
+                        </div>
+                        <div class="tier-card platinum">
+                            <h3 class="tier-name">Platinum</h3>
+                            <p class="tier-requirement">10,000+ points</p>
+                            <ul class="tier-benefits">
+                                <li>2x points multiplier</li>
+                                <li>Guaranteed room upgrades</li>
+                                <li>Late checkout (4pm)</li>
+                                <li>Premium welcome amenities</li>
+                                <li>Dedicated concierge</li>
+                                <li>Exclusive events access</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.querySelector('.bg-particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // Add scroll-triggered animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        });
+
+        // Add hover effects to cards
+        document.querySelectorAll('.card, .tier-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = this.classList.contains('tier-card') 
+                    ? 'translateY(-15px) scale(1.02)' 
+                    : 'translateY(-10px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

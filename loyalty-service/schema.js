@@ -1,137 +1,93 @@
-export const typeDefs = `#graphql
-    type Guest {
-        guestId: ID!
-        name: String!
-        email: String!
-        joinDate: String!
-        loyaltyAccount: LoyaltyAccount
-    }
+import { gql } from 'graphql-tag';
 
-    type LoyaltyAccount {
-        accountId: ID!
-        guestId: ID!
-        totalPoints: Int!
-        tier: String!
-        tierMultiplier: Float!
-        lastUpdated: String!
-        transactions: [Transaction]
-        redemptions: [Redemption]
-        guestName: String
-        guestEmail: String
-        pointsExpiring: Int
-        nextTierPoints: Int
-    }
+export const typeDefs = gql`
+  type Guest {
+    id: Int!
+    fullName: String!
+    email: String!
+    phone: String
+    address: String
+    loyaltyPoints: Int!
+    tier: String!
+    createdAt: String!
+    updatedAt: String!
+  }
 
-    type TierConfig {
-        tierName: String!
-        pointsRequired: Int!
-        multiplier: Float!
-        benefits: [String]!
-    }
+  type Reward {
+    rewardId: Int!
+    name: String!
+    pointsRequired: Int!
+    description: String
+    available: Boolean!
+    tierRestriction: String
+    createdAt: String!
+    updatedAt: String!
+  }
 
-    type Transaction {
-        transactionId: ID!
-        accountId: ID!
-        points: Int!
-        basePoints: Int!
-        multiplier: Float!
-        transactionType: String!
-        description: String
-        transactionDate: String!
-        expiryDate: String
-    }
+  type HotelEaseGuest {
+    id: Int!
+    fullName: String!
+    email: String!
+    phone: String
+    address: String
+  }
 
-    type Reward {
-        rewardId: ID!
-        name: String!
-        pointsRequired: Int!
-        description: String
-        available: Boolean!
-        createdAt: String!
-        updatedAt: String!
-        tierRestriction: String
-    }
+  type HotelEaseReservation {
+    id: Int!
+    roomId: Int!
+    checkInDate: String!
+    checkOutDate: String!
+    status: String!
+  }
 
-    type Redemption {
-        redemptionId: ID!
-        accountId: ID!
-        rewardId: ID!
-        redemptionDate: String!
-        status: String!
-        reward: Reward
-        rewardName: String
-        pointsUsed: Int!
-    }
+  type HotelEaseBill {
+    id: Int!
+    totalAmount: Float!
+    paymentStatus: String!
+    generatedAt: String!
+  }
 
-    type AccountSummary {
-        account: LoyaltyAccount!
-        recentTransactions: [Transaction]!
-        pendingRedemptions: [Redemption]!
-        tierProgress: TierProgress!
-        expiringPoints: [Transaction]!
-    }
+  type Query {
+    guest(id: Int!): Guest
+    guests: [Guest!]!
+    guestByEmail(email: String!): Guest
+    rewards(available: Boolean, tier: String): [Reward!]!
+    reward(id: Int!): Reward
+    hotelEaseGuest(email: String!): HotelEaseGuest
+    hotelEaseReservations(guestId: Int!): [HotelEaseReservation!]!
+    hotelEaseBills(reservationId: Int!): [HotelEaseBill!]!
+  }
 
-    type TierProgress {
-        currentTier: String!
-        currentPoints: Int!
-        nextTier: String
-        pointsToNextTier: Int
-        progressPercentage: Float
-    }
+  type Mutation {
+    createGuest(guestData: GuestInput!): Guest!
+    updateGuest(id: Int!, guestData: GuestUpdateInput!): Guest!
+    deleteGuest(id: Int!): Boolean!
+    addReward(name: String!, pointsRequired: Int!, description: String, available: Boolean, tierRestriction: String): Reward!
+    updateReward(id: Int!, rewardData: RewardUpdateInput!): Reward!
+    deleteReward(id: Int!): Boolean!
+    earnPoints(guestId: Int!, points: Int!, reason: String!): Guest!
+    redeemReward(guestId: Int!, rewardId: Int!): Guest!
+  }
 
-    type Query {
-        guest(id: ID!): Guest
-        loyaltyAccount(id: ID!): LoyaltyAccount
-        rewards(available: Boolean, tier: String): [Reward]
-        reward(id: ID!): Reward
-        transactions(accountId: ID!, type: String, startDate: String, endDate: String): [Transaction]
-        redemptions(accountId: ID!, status: String): [Redemption]
-        accountSummary(accountId: ID!): AccountSummary
-        tierConfigs: [TierConfig]!
-        analytics(accountId: ID!): AccountAnalytics
-    }
+  input GuestInput {
+    fullName: String!
+    email: String!
+    phone: String
+    address: String
+  }
 
-    type AccountAnalytics {
-        totalPointsEarned: Int!
-        totalPointsRedeemed: Int!
-        averagePointsPerMonth: Float!
-        favoriteRewards: [RewardAnalytics]!
-        tierHistory: [TierHistory]!
-    }
+  input GuestUpdateInput {
+    fullName: String
+    email: String
+    phone: String
+    address: String
+  }
 
-    type RewardAnalytics {
-        reward: Reward!
-        redemptionCount: Int!
-        totalPointsSpent: Int!
-    }
-
-    type TierHistory {
-        tier: String!
-        achievedDate: String!
-        pointsAtAchievement: Int!
-    }
-
-    type Mutation {
-        createLoyaltyAccount(guestId: ID!): LoyaltyAccount
-        earnPoints(accountId: ID!, points: Int!, description: String): Transaction
-        redeemReward(accountId: ID!, rewardId: ID!): Redemption
-        createReward(name: String!, pointsRequired: Int!, description: String, tierRestriction: String): Reward
-        addReward(name: String!, pointsRequired: Int!, description: String, available: Boolean, tierRestriction: String): Reward
-        updateRedemptionStatus(redemptionId: ID!, status: String!): Redemption
-        bulkEarnPoints(transactions: [BulkPointsInput]!): [Transaction]!
-        updateTierConfig(config: TierConfigInput!): TierConfig!
-    }
-
-    input BulkPointsInput {
-        accountId: ID!
-        points: Int!
-        description: String
-    }
-
-    input TierConfigInput {
-        tierName: String!
-        pointsRequired: Int!
-        multiplier: Float!
-        benefits: [String]!
-    }
-` 
+  input RewardUpdateInput {
+    name: String
+    pointsRequired: Int
+    description: String
+    available: Boolean
+    tierRestriction: String
+  }
+`; 
