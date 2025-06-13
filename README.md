@@ -45,6 +45,101 @@ This service allows guests to leave, edit, and delete reviews about their stays.
 - `Aspect`: Defines a specific quality metric for rating.
 
 ---
+# Environment Variables Documentation
+
+This section describes the required `.env` variables for each service in the HotelMate project.  
+**Copy the relevant section and create a `.env` file in each service directory.**
+
+---
+
+## frontend-loyalty/.env
+
+```properties
+PORT=3001
+REVIEW_FRONTEND_URL=http://localhost:3002
+```
+
+- **PORT**: Port for the frontend-loyalty app (default: 3001).
+- **REVIEW_FRONTEND_URL**: URL of the review frontend service. Change if running on a different host or port.
+
+---
+
+## frontend-review/.env
+
+```properties
+PORT=3002
+FRONTEND_LOYALTY_URL=http://localhost:3001
+GRAPHQL_ENDPOINT=http://host.docker.internal:4002/graphql
+```
+
+- **PORT**: Port for the frontend-review app (default: 3002).
+- **FRONTEND_LOYALTY_URL**: URL of the loyalty frontend service.
+- **GRAPHQL_ENDPOINT**: URL of the review-service GraphQL endpoint.  
+  - Use `http://localhost:4002/graphql` if running locally.
+  - Use `http://host.docker.internal:4002/graphql` if running in Docker.
+
+---
+
+## loyalty-service/.env
+
+```properties
+DB_USER=yourusername
+DB_HOST=host.docker.internal
+DB_NAME=hotelmate-loyalty-service
+DB_PASSWORD=yourpassword
+DB_PORT=yourport
+
+GUEST_SERVICE_URL=http://host.docker.internal:8003/graphql
+ROOM_SERVICE_URL=http://host.docker.internal:8001/graphql
+RESERVATION_SERVICE_URL=http://host.docker.internal:8002/graphql
+BILLING_SERVICE_URL=http://host.docker.internal:8004/graphql
+```
+
+- **DB_USER**: Username for the loyalty service database.
+- **DB_HOST**: Hostname for the PostgreSQL server.  
+  - Use `host.docker.internal` for Docker-to-host connections.
+  - Use the database service name (e.g., `loyalty-db`) if using Docker Compose.
+- **DB_NAME**: Database name for the loyalty service.
+- **DB_PASSWORD**: Password for the user.
+- **DB_PORT**: Port for PostgreSQL (default: 5432).
+- **GUEST_SERVICE_URL**: URL for the guest service GraphQL endpoint.
+- **ROOM_SERVICE_URL**: URL for the room service GraphQL endpoint.
+- **RESERVATION_SERVICE_URL**: URL for the reservation service GraphQL endpoint.
+- **BILLING_SERVICE_URL**: URL for the billing service GraphQL endpoint.
+
+---
+
+## review-service/.env
+
+```properties
+PORT=4002
+
+DB_USER=yourusername
+DB_HOST=host.docker.internal
+DB_NAME=hotelmate-review-service
+DB_PASSWORD=yourpassword
+DB_PORT=yourport
+
+GUEST_SERVICE_URL=http://host.docker.internal:8003/graphql
+ROOM_SERVICE_URL=http://host.docker.internal:8001/graphql
+RESERVATION_SERVICE_URL=http://host.docker.internal:8002/graphql
+BILLING_SERVICE_URL=http://host.docker.internal:8004/graphql
+```
+
+- **PORT**: Port for the review-service (default: 4002).
+- **DB_USER**: PostgreSQL username for the review service database.
+- **DB_HOST**: Hostname for the PostgreSQL server.  
+  - Use `host.docker.internal` for Docker-to-host connections.
+  - Use the database service name (e.g., `review-db`) if using Docker Compose.
+- **DB_NAME**: Database name for the review service.
+- **DB_PASSWORD**: Password for the PostgreSQL user.
+- **DB_PORT**: Port for PostgreSQL (default: 5432).
+- **GUEST_SERVICE_URL**: URL for the guest service GraphQL endpoint.
+- **ROOM_SERVICE_URL**: URL for the room service GraphQL endpoint.
+- **RESERVATION_SERVICE_URL**: URL for the reservation service GraphQL endpoint.
+- **BILLING_SERVICE_URL**: URL for the billing service GraphQL endpoint.
+
+---
 
 ### 💎 Loyalty Service
 
