@@ -1,0 +1,144 @@
+services:
+  # HotelEase Services
+  room_service:
+    build: ./hotelease/room_service
+    ports:
+      - "8001:8000"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=room_db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotelmate_network
+
+  reservation_service:
+    build: ./hotelease/reservation_service
+    ports:
+      - "8002:8000"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=reservation_db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - ROOM_SERVICE_URL=http://room_service:8000/graphql
+      - GUEST_SERVICE_URL=http://guest_service:8000/graphql
+    depends_on:
+      room_service:
+        condition: service_started
+      guest_service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotelmate_network
+
+  guest_service:
+    build: ./hotelease/guest_service
+    ports:
+      - "8003:8000"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=guest_db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotelmate_network
+
+  billing_service:
+    build: ./hotelease/billing_service
+    ports:
+      - "8004:8000"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=billing_db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - RESERVATION_SERVICE_URL=http://reservation_service:8000/graphql
+    depends_on:
+      reservation_service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotelmate_network
+
+  # Our Services
+  loyalty-service:
+    build: ./loyalty-service
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=loyalty_db
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - GUEST_SERVICE_URL=http://guest_service:8000/graphql
+      - RESERVATION_SERVICE_URL=http://reservation_service:8000/graphql
+    depends_on:
+      guest_service:
+        condition: service_started
+      reservation_service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - hotelmate_network
+
+  loyalty-frontend:
+    build: ./frontend-loyalty
+    ports:
+      - "3001:3001"
+    environment:
+      - LOYALTY_SERVICE_URL=http://loyalty-service:4001/graphql
+      - NODE_ENV=development
+    depends_on:
+      loyalty-service:
+        condition: service_started
+    networks:
+      - hotelmate_network
+
+  # Database
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=loyalty_db,room_db,reservation_db,guest_db,billing_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-dbs.sh:/docker-entrypoint-initdb.d/00-init-multiple-dbs.sh:ro
+      - ./loyalty-service/schema.sql:/docker-entrypoint-initdb.d/01-loyalty-schema.sql:ro
+      - ./02-loyalty-init.sh:/docker-entrypoint-initdb.d/02-loyalty-init.sh:ro
+      - ./hotelease/room_service/schema.sql:/docker-entrypoint-initdb.d/03-room-schema.sql:ro
+      - ./hotelease/reservation_service/schema.sql:/docker-entrypoint-initdb.d/04-reservation-schema.sql:ro
+      - ./hotelease/guest_service/schema.sql:/docker-entrypoint-initdb.d/05-guest-schema.sql:ro
+      - ./hotelease/billing_service/schema.sql:/docker-entrypoint-initdb.d/06-billing-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hotelmate_network
+
+networks:
+  hotelmate_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
