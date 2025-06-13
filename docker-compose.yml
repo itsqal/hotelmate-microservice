@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  loyalty-service:
+    build:
+      context: ./loyalty-service
+    env_file:
+      - ./loyalty-service/.env
+    ports:
+      - "4001:4001"
+    restart: unless-stopped
+
+  review-service:
+    build:
+      context: ./review-service
+    env_file:
+      - ./review-service/.env
+    ports:
+      - "4002:4002"
+    restart: unless-stopped
+
+  frontend-loyalty:
+    build:
+      context: ./frontend-loyalty
+    env_file:
+      - ./frontend-loyalty/.env
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    depends_on:
+      - loyalty-service
+
+  frontend-review:
+    build:
+      context: ./frontend-review
+    env_file:
+      - ./frontend-review/.env
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    depends_on:
+      - review-service

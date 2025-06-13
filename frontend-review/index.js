@@ -59,7 +59,7 @@ app.get("/reviews", async (req, res) => {
     const { data } = await response.json();
     res.render("reviews", { reviews: data.reviews });
   } catch (error) {
-    res.status(500).send("Error fetching reviews");
+    res.status(500).send("Error fetching reviews", error);
   }
 });
 
