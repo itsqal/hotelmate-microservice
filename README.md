@@ -12,6 +12,7 @@ HotelMate is a modular microservice-based system designed to enhance the guest e
   - [Review Service Examples](#review-service-examples)
   - [Loyalty Service Examples](#loyalty-service-examples)
 - [Technologies](#technologies)
+- [Setup](#setup)
 
 ---
 
@@ -262,4 +263,13 @@ query {
     tierRestriction
   }
 }
+```
+
+---
+
+## Setup
+
+To run application, setup env files for each service (refer to the documentation) and then run
+```bash
+docker compose up -d
 ```
