@@ -245,4 +245,89 @@ query getReviewById {
 ```
 
 ### 📘 Loyalty Service Mutation
+
+#### ✅ Award or Adjust Points
+```graphql
+mutation {
+  updatePoints(guestId: 1, points: 5000, reason: "Manual adjustment") {
+    id
+    fullName
+    loyaltyPoints
+    tier
+  }
+}
+```
+
+#### ✅ Reset Points
+```graphql
+mutation {
+  resetPoints(guestId: 1, reason: "Account reset") {
+    id
+    fullName
+    loyaltyPoints
+    tier
+  }
+}
+```
+
+#### ✅ Redeem a Reward
+```graphql
+mutation {
+  redeemReward(guestId: 1, rewardId: 2) {
+    id
+    fullName
+    loyaltyPoints
+    tier
+  }
+}
+```
+
+#### ✅ Process Completed Reservations (award points for all completed stays)
+```graphql
+mutation {
+  processCompletedReservations
+}
+```
+
 ### 📘 Loyalty Service Query
+
+#### ✅ Get All Guests with Loyalty Info
+```graphql
+query {
+  guests {
+    id
+    fullName
+    email
+    loyaltyPoints
+    tier
+  }
+}
+```
+
+#### ✅ Get Guests with Completed Reservations
+```graphql
+query {
+  guestsWithCompletedReservations {
+    id
+    fullName
+    loyaltyPoints
+    tier
+    email
+    phone
+    address
+  }
+}
+```
+
+#### ✅ Get All Rewards
+```graphql
+query {
+  rewards(available: true) {
+    rewardId
+    name
+    pointsRequired
+    description
+    tierRestriction
+  }
+}
+```
